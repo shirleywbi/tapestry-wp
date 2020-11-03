@@ -28,7 +28,11 @@
         "
         :x="node.coordinates.x"
         :y="node.coordinates.y"
-        :radius="node.status === 'publish' ? radius : radius + 15"
+        :radius="
+          node.status === 'publish' || node.status === 'accept'
+            ? radius
+            : radius + 15
+        "
         :data-qa="`node-progress-${node.id}`"
         :progress="progress"
         :locked="!node.accessible"
