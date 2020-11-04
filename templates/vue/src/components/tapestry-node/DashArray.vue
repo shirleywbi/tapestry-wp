@@ -9,7 +9,7 @@
     ></circle>
     <path
       v-show="
-        !locked && progress > 0 && (status === 'publish' || status === 'accept')
+        !locked && progress > 0 && (status !== 'publish' && status)
       "
       ref="path"
       class="bar"

@@ -28,11 +28,7 @@
         "
         :x="node.coordinates.x"
         :y="node.coordinates.y"
-        :radius="
-          node.status === 'publish' || node.status === 'accept'
-            ? radius
-            : radius + 15
-        "
+        :radius="radius"
         :data-qa="`node-progress-${node.id}`"
         :progress="progress"
         :locked="!node.accessible"
@@ -46,10 +42,7 @@
         "
         :x="node.coordinates.x"
         :y="node.coordinates.y"
-        :radius="
-          node.status === 'publish' || node.status === 'accept'
-            ? radius
-            : radius + 15
+        :radius= "radius + 15
         "
         :data-qa="`node-progress-${node.id}`"
         :progress="progress"
