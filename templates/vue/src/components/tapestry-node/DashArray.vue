@@ -5,13 +5,6 @@
       class="track"
       :stroke-width="width"
       :stroke="locked ? '#999' : strokeColor"
-      :stroke-dasharray="status === 'publish' ? 0 : dasharraySize"
-    ></circle>
-    <circle
-      ref="track"
-      class="track"
-      :stroke-width="width"
-      :stroke="locked ? '#999' : strokeColor"
       :stroke-dasharray="status === 'accept' ? 0 : dasharraySize"
     ></circle>
     <path

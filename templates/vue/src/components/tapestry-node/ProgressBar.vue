@@ -7,16 +7,9 @@
       :stroke="locked ? '#999' : strokeColor"
       :stroke-dasharray="status === 'publish' ? 0 : dasharraySize"
     ></circle>
-    <circle
-      ref="track"
-      class="track"
-      :stroke-width="width"
-      :stroke="locked ? '#999' : strokeColor"
-      :stroke-dasharray="status === 'accept' ? 0 : dasharraySize"
-    ></circle>
     <path
       v-show="
-        !locked && progress > 0 && (status === 'publish' || status === 'accept')
+        !locked && progress > 0
       "
       ref="path"
       class="bar"
