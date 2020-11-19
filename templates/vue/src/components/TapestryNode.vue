@@ -27,12 +27,26 @@
             node.nodeType !== '' &&
             !node.hideProgress
         "
+        :x="node.coordinates.x"
+        :y="node.coordinates.y"
+        :radius="radius"
         :data-qa="`node-progress-${node.id}`"
-        :radius="node.status === 'draft' ? radius + 15 : radius"
         :progress="progress"
         :locked="!node.accessible"
-        :draft="node.status === 'draft'"
       ></progress-bar>
+      <status-bar
+        v-if="
+          node.nodeType !== 'grandchild' &&
+            node.nodeType !== '' &&
+            !node.hideProgress
+        "
+        :x="node.coordinates.x"
+        :y="node.coordinates.y"
+        :radius="radius"
+        :locked="!node.accessible"
+        :status="node.status"
+        :reviewStatus="node.reviewStatus"
+      ></status-bar>
       <g v-show="node.nodeType !== 'grandchild' && node.nodeType !== ''">
         <foreignObject
           v-if="!node.hideTitle"
@@ -62,14 +76,14 @@
             <tapestry-icon :icon="icon" svg></tapestry-icon>
           </node-button>
           <add-child-button
-            v-if="(hasPermission('add') || isLoggedIn) && !isSubAccordionRow"
+            v-if="isLoggedIn && !isSubAccordionRow"
             :node="node"
-            :x="-35"
+            :x="hasPermission('edit') ? -35 : 0"
             :y="radius"
           ></add-child-button>
           <node-button
             v-if="isLoggedIn && hasPermission('edit')"
-            :x="35"
+            :x="isSubAccordionRow ? 0 : 35"
             :y="radius"
             :data-qa="`edit-node-${node.id}`"
             @click="editNode"
@@ -105,9 +119,10 @@ import TapestryIcon from "@/components/TapestryIcon"
 import { names } from "@/config/routes"
 import { bus } from "@/utils/event-bus"
 import Helpers from "@/utils/Helpers"
-import { isLoggedIn } from "@/utils/wp"
+import * as wp from "@/services/wp"
 import AddChildButton from "./tapestry-node/AddChildButton"
 import ProgressBar from "./tapestry-node/ProgressBar"
+import StatusBar from "./tapestry-node/StatusBar"
 import NodeButton from "./tapestry-node/NodeButton"
 
 export default {
@@ -116,6 +131,7 @@ export default {
     AddChildButton,
     ProgressBar,
     TapestryIcon,
+    StatusBar,
     NodeButton,
   },
   props: {
@@ -143,7 +159,7 @@ export default {
       "isAccordionRow",
     ]),
     isLoggedIn() {
-      return isLoggedIn
+      return wp.isLoggedIn()
     },
     isSubAccordionRow() {
       const parent = this.getParent(this.node.id)
@@ -209,6 +225,12 @@ export default {
         showImages
       ) {
         return `url(#node-image-${this.node.id})`
+      }
+      if (this.selected) {
+        return "#11a6d8"
+      }
+      if (!this.node.accessible) {
+        return "#8a8a8c"
       }
       return "#8396a1"
     },

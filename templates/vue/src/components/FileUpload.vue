@@ -44,6 +44,7 @@
           :placeholder="placeholder"
           :value="value"
           :data-qa="inputTestId"
+          :data-testid="inputTestId"
           :disabled="isUploading"
           required
           @input="$emit('input', $event)"
@@ -71,6 +72,7 @@
 
 <script>
 import axios from "axios"
+import { data as wpData } from "@/services/wp"
 
 export default {
   name: "file-upload",

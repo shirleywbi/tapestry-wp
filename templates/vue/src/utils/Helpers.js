@@ -1,3 +1,5 @@
+import * as wp from "@/services/wp"
+
 /**
  * Helper Functions
  */
@@ -70,7 +72,7 @@ export default class Helpers {
   }
 
   static getImagePath(image) {
-    return `${wpData.vue_uri}/${image.split("dist")[1]}`
+    return `${wp.data.vue_uri}/${image.split("dist")[1]}`
   }
 
   // src: https://stackoverflow.com/questions/7394748/whats-the-right-way-to-decode-a-string-that-has-special-html-entities-in-it?lq=1
@@ -137,32 +139,35 @@ export default class Helpers {
     return outObject
   }
 
-  static deepMerge(source, other) {
-    const out = { ...source }
-    for (const key in other) {
-      const value = other[key]
-      if (value && typeof value === "object" && !Array.isArray(value)) {
-        out[key] = Helpers.deepMerge(out[key], value)
+  static hasPermission(node, action) {
+    if (node.status === "draft") {
+      if (wp.canEditTapestry() && node.reviewStatus === "submitted") {
+        return true
+      } else if (node.author && wp.isCurrentUser(node.author.id)) {
+        // authors cannot edit their submitted draft nodes
+        if (action == "edit" && node.reviewStatus === "submitted") {
+          return false
+        }
+        return true
       } else {
-        out[key] = value
+        return false
       }
     }
-    return out
-  }
 
-  static hasPermission(node, action) {
-    // Check 1: Has edit permissions for Tapestry
-    if (wpData.wpCanEditTapestry === "1") {
+    // Check 1: User has edit permissions for Tapestry
+    if (wp.canEditTapestry()) {
       return true
     }
 
-    // Check 2: User is the author of the node
-    if (node.author && wpData.currentUser.ID == parseInt(node.author.id)) {
-      return true
+    // Check 2: User is the author of the node (unless node was submitted)
+    if (node.author && wp.isCurrentUser(node.author.id)) {
+      if (node.reviewStatus !== "accept") {
+        return true
+      }
     }
 
     // Check 3: User has a role with general edit permissions
-    const { ID, roles } = wpData.currentUser
+    const { id, roles } = wp.getCurrentUser()
     const allowedRoles = ["administrator", "editor", "author"]
     if (allowedRoles.some(role => roles.includes(role))) {
       return true
@@ -175,7 +180,7 @@ export default class Helpers {
     }
 
     // Check 5: Node has authenticated permissions
-    if (wpData.currentUser.ID && authenticated && authenticated.includes(action)) {
+    if (wp.isLoggedIn() && authenticated && authenticated.includes(action)) {
       return true
     }
 
@@ -189,7 +194,7 @@ export default class Helpers {
     }
 
     // Check 7: User has a permission associated with its ID
-    const userPermissions = node.permissions[`user-${ID}`]
+    const userPermissions = node.permissions[`user-${id}`]
     if (userPermissions) {
       return userPermissions.includes(action)
     }
