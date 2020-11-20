@@ -139,34 +139,35 @@ export default class Helpers {
     return outObject
   }
 
-  static deepMerge(source, other) {
-    const out = { ...source }
-    for (const key in other) {
-      const value = other[key]
-      if (value && typeof value === "object" && !Array.isArray(value)) {
-        out[key] = Helpers.deepMerge(out[key], value)
+  static hasPermission(node, action) {
+    if (node.status === "draft") {
+      if (wp.canEditTapestry() && node.reviewStatus === "submitted") {
+        return true
+      } else if (node.author && wp.isCurrentUser(node.author.id)) {
+        // authors cannot edit their submitted draft nodes
+        if (action == "edit" && node.reviewStatus === "submitted") {
+          return false
+        }
+        return true
       } else {
-        out[key] = value
+        return false
       }
     }
-    return out
-  }
 
-  static hasPermission(node, action) {
-    const user = wp.getCurrentUser()
-
-    // Check 1: Has edit permissions for Tapestry
+    // Check 1: User has edit permissions for Tapestry
     if (wp.canEditTapestry()) {
       return true
     }
 
-    // Check 2: User is the author of the node
-    if (node.author && user.id == parseInt(node.author.id)) {
-      return true
+    // Check 2: User is the author of the node (unless node was submitted)
+    if (node.author && wp.isCurrentUser(node.author.id)) {
+      if (node.reviewStatus !== "accept") {
+        return true
+      }
     }
 
     // Check 3: User has a role with general edit permissions
-    const { id, roles } = user
+    const { id, roles } = wp.getCurrentUser()
     const allowedRoles = ["administrator", "editor", "author"]
     if (allowedRoles.some(role => roles.includes(role))) {
       return true

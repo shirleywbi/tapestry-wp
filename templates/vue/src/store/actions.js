@@ -42,7 +42,6 @@ export async function addNode({ commit, dispatch, getters, state }, newNode) {
         [getters.yOrFy]: nodeToAdd.coordinates.y,
       },
     })
-    dispatch("updateNodePermissions", { id, permissions: nodeToAdd.permissions })
     return id
   } catch (error) {
     dispatch("addApiError", error)
@@ -71,9 +70,6 @@ export async function updateNode({ commit, dispatch, getters }, payload) {
           [getters.yOrFy]: newNode.coordinates.y,
         },
       })
-    }
-    if (newNode.permissions) {
-      dispatch("updateNodePermissions", { id, permissions: newNode.permissions })
     }
     return id
   } catch (error) {
@@ -110,7 +106,7 @@ export async function updateNodeProgress({ commit, dispatch }, payload) {
   try {
     const { id, progress } = payload
 
-    if (!wpData.isLoggedIn()) {
+    if (!wp.isLoggedIn()) {
       const progressObj = JSON.parse(localStorage.getItem(LOCAL_PROGRESS_ID))
       const nodeProgress = progressObj[id] || {}
       nodeProgress.progress = progress
@@ -143,7 +139,7 @@ export async function updateNodeCoordinates(
 export async function completeNode(context, nodeId) {
   const { commit, dispatch, getters } = context
   try {
-    if (!wpData.isLoggedIn()) {
+    if (!wp.isLoggedIn()) {
       const progressObj = JSON.parse(localStorage.getItem(LOCAL_PROGRESS_ID))
       const nodeProgress = progressObj[nodeId] || {}
       nodeProgress.completed = true
@@ -194,14 +190,6 @@ async function unlockNodes({ commit, getters, dispatch }) {
         commit("updateNode", { id, newNode })
       }
     }
-  } catch (error) {
-    dispatch("addApiError", error)
-  }
-}
-
-export function updateNodePermissions({ dispatch }, payload) {
-  try {
-    client.updatePermissions(payload.id, JSON.stringify(payload.permissions))
   } catch (error) {
     dispatch("addApiError", error)
   }
